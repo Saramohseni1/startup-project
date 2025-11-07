@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ورود / ثبت‌نام | مدیریت هزینه اجتماعی</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: 'Vazirmatn', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a, #000);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .auth-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 182, 193, 0.3);
+      border-radius: 16px;
+      padding: 3rem;
+      width: 360px;
+      text-align: center;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      color: #ffb6c1;
+      margin-bottom: 1.5rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+      border: 1px solid #555;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #ffb6c1;
+    }
+
+    .error {
+      color: #ff8080;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      width: 100%;
+      background: #ffb6c1;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      padding: 0.8rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #fff;
+      transform: translateY(-2px);
+    }
+
+    .switch {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .switch a {
+      color: #ffb6c1;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-home {
+      margin-top: 1.5rem;
+      display: block;
+      color: #aaa;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+
+    .back-home:hover {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <h2 id="formTitle">ورود</h2>
+    <form id="authForm">
+      <input type="text" id="username" name="username" placeholder="نام کاربری (انگلیسی)" required />
+      <input type="password" id="password" name="password" placeholder="رمز عبور" required />
+      <p id="error-message" class="error"></p>
+      <button type="submit" id="submitBtn">ورود</button>
+    </form>
+    <p class="switch">حساب نداری؟ <a id="switchMode">ثبت‌نام کن</a></p>
+    <a href="index.html" class="back-home">🏠 بازگشت به صفحه اصلی</a>
+  </div>
+
+  <script>
+    let isLogin = true;
+    const formTitle = document.getElementById("formTitle");
+    const submitBtn = document.getElementById("submitBtn");
+    const switchMode = document.getElementById("switchMode");
+    const errorMsg = document.getElementById("error-message");
+
+    switchMode.addEventListener("click", (e) => {
+      e.preventDefault();
+      isLogin = !isLogin;
+      formTitle.textContent = isLogin ? "ورود" : "ثبت‌نام";
+      submitBtn.textContent = isLogin ? "ورود" : "ثبت‌نام";
+      switchMode.textContent = isLogin ? "ثبت‌نام کن" : "وارد شو";
+      errorMsg.textContent = "";
+      document.querySelector(".switch").innerHTML = isLogin
+        ? 'حساب نداری؟ <a id="switchMode">ثبت‌نام کن</a>'
+        : 'قبلاً ثبت‌نام کردی؟ <a id="switchMode">وارد شو</a>';
+      document.getElementById("switchMode").addEventListener("click", switchMode.onclick);
+    });
+
+    document.getElementById("authForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMsg.textContent = "";
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!/^[A-Za-z0-9_]+$/.test(username)) {
+        errorMsg.textContent = "⚠️ فقط حروف انگلیسی، عدد یا _ مجاز است.";
+        return;
+      }
+
+      const endpoint = isLogin ? "/login" : "/register";
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (res.redirected) {
+          window.location.href = res.url;
+          return;
+        }
+
+        const text = await res.text();
+        if (!res.ok) throw new Error(text);
+        alert(isLogin ? "ورود موفق ✅" : "ثبت‌نام موفق ✅");
+        if (isLogin) window.location.href = "/dashboard.html";
+      } catch (err) {
+        errorMsg.textContent = err.message || "خطا در ارتباط با سرور.";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>پیش‌نمایش داشبورد — رزگلد / مشکی / نقره‌ای</title>
+<style>
+  /* فونت و تنظیمات پایه */
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap');
+  :root{
+    --bg-1:#0d0d10;
+    --bg-2:#161617;
+    --rose-1:#ffb6c1;
+    --rose-2:#e89fa6;
+    --metal:#c0c0c8;
+    --card: rgba(255,255,255,0.03);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    height:100vh;
+    font-family:'Vazirmatn',sans-serif;
+    background:
+      radial-gradient(800px 400px at 12% 10%, rgba(232,159,166,0.06), transparent 6%),
+      linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    color:#f4f4f4;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px;
+  }
+
+  /* کانتینر مرکزی */
+  .frame{
+    width:100%;
+    max-width:1100px;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.7);
+    border:1px solid rgba(224,159,166,0.06);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    position:relative;
+  }
+  .bg-subtle {
+    position:absolute; inset:0; pointer-events:none; opacity:0.06;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(232,159,166,0.14), transparent 5%),
+      linear-gradient(45deg, rgba(200,160,170,0.02), transparent 25%);
+    mix-blend-mode: overlay;
+  }
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 26px;
+    border-bottom:1px solid rgba(255,255,255,0.02);
+    background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(232,159,166,0.02));
+  }
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo {
+    width:50px;height:50px;border-radius:12px;
+    background:linear-gradient(135deg,var(--rose-1),var(--rose-2));
+    display:flex;align-items:center;justify-content:center;color:#111;font-weight:800;
+    box-shadow:0 8px 30px rgba(232,159,166,0.12);
+  }
+  .title { font-weight:800; color:var(--metal); font-size:18px }
+  .subtitle { font-size:12px; color:rgba(255,255,255,0.75) }
+
+  /* بدنه */
+  .body {
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap:20px;
+    padding:20px;
+  }
+  @media (max-width:980px){ .body{ grid-template-columns:1fr; } }
+
+  /* کاردها */
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:14px;
+    border:1px solid rgba(255,255,255,0.02);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .widgets{ display:flex; gap:12px }
+  .widget{ flex:1; padding:12px; border-radius:10px; background: linear-gradient(180deg, rgba(232,159,166,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.02); }
+  .widget .label { font-size:12px; color:var(--metal) }
+  .widget .value { font-size:18px; font-weight:800; color:var(--rose-1); margin-top:6px }
+
+  /* progress */
+  .progress { margin-top:10px; height:12px; background: rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.01); }
+  .progress > div { height:100%; background: linear-gradient(90deg,var(--rose-2),var(--metal)); width:0%; transition: width 700ms cubic-bezier(.2,.9,.2,1); }
+
+  /* filters */
+  .filters{ display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap }
+  .input {
+    background:transparent; border:1px solid rgba(255,255,255,0.04); padding:8px 10px; border-radius:10px; color:#fff;
+  }
+
+  /* جدول */
+  table{ width:100%; border-collapse:collapse; color:#fff; }
+  thead th{ text-align:right; padding:10px; color:var(--metal); font-weight:700; font-size:13px; border-bottom:1px solid rgba(255,255,255,0.03) }
+  tbody td{ padding:10px; border-bottom:1px solid rgba(255,255,255,0.03); font-size:13px; text-align:right }
+
+  /* buttons */
+  .btn {
+    padding:8px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:700;
+    box-shadow: 0 8px 20px rgba(232,159,166,0.08);
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .btn.primary{ background: linear-gradient(90deg,var(--rose-2), #ffd4da); color:#111 }
+  .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--metal) }
+  .btn:active{ transform:translateY(1px) }
+  .btn:hover{ transform:translateY(-4px); box-shadow:0 22px 40px rgba(232,159,166,0.12) }
+
+  /* right column */
+  .right { display:flex; flex-direction:column; gap:12px; }
+
+  /* chart placeholder */
+  .chart-box{ height:260px; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.65); font-weight:700; font-size:14px; }
+
+  /* modal preview (static) */
+  .modal {
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background: rgba(0,0,0,0.6);
+  }
+  .modal .box { width:100%; max-width:520px; border-radius:12px; padding:18px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.02); }
+
+  /* small visual flourishes */
+  .chip { display:inline-block; padding:6px 10px; border-radius:999px; background: linear-gradient(90deg,var(--rose-2),var(--metal)); color:#111; font-weight:700; }
+  .muted { color:rgba(255,255,255,0.72); font-size:13px }
+
+  /* subtle animated glows */
+  .glow {
+    position:relative;
+  }
+  .glow::after{
+    content:""; position:absolute; inset:0; border-radius:12px;
+    box-shadow: 0 0 30px rgba(232,159,166,0.08);
+    pointer-events:none; opacity:0; transition:opacity .25s ease;
+  }
+  .glow:hover::after{ opacity:1 }
+
+  /* micro animations for demo */
+  .fade-in { opacity:0; transform:translateY(8px); animation:fadeIn .7s forwards; }
+  .fade-in.delay-1{ animation-delay:.08s }
+  .fade-in.delay-2{ animation-delay:.16s }
+  @keyframes fadeIn{ to { opacity:1; transform:none } }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="bg-subtle"></div>
+
+    <header>
+      <div class="brand">
+        <div class="logo">دَنگ</div>
+        <div>
+          <div class="title">مدیریت دَنگ</div>
+          <div class="subtitle">نسخهٔ نمایشی — پیش‌نمایش ظاهری</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="chip">نسخه MVP</div>
+        <button class="btn ghost">خروجی PDF</button>
+        <button class="btn primary">خروج</button>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- left -->
+      <div class="left">
+        <div class="card widgets fade-in">
+          <div class="widget">
+            <div class="label">💸 مجموع هزینه‌ها</div>
+            <div class="value">۲,۴۰۰,۰۰۰ تومان</div>
+          </div>
+          <div class="widget">
+            <div class="label">🗓 این ماه</div>
+            <div class="value">۱,۲۰۰,۰۰۰ تومان</div>
+          </div>
+          <div class="widget">
+            <div class="label">👥 اعضا</div>
+            <div class="value">۴ نفر</div>
+          </div>
+        </div>
+
+        <div class="card fade-in delay-1">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>هدف ماهانه</strong></div>
+            <div class="muted">هدف: 5,000,000 تومان</div>
+          </div>
+          <div class="progress" style="margin-top:10px"><div id="pbar" style="width:24%"></div></div>
+          <div class="muted" style="margin-top:8px">پیشرفت: <strong>24%</strong></div>
+        </div>
+
+        <div class="card fade-in delay-2">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div><strong>لیست هزینه‌ها</strong></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input class="input" placeholder="جستجو (مثلاً غذا)" />
+              <input class="input" type="date" />
+              <input class="input" type="date" />
+              <button class="btn ghost">فیلتر</button>
+              <button class="btn ghost">پاک کن</button>
+            </div>
+          </div>
+
+          <div style="overflow:auto; max-height:280px">
+            <table>
+              <thead>
+                <tr><th>دسته</th><th>مبلغ</th><th>توضیح</th><th>تاریخ</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>ناهار</td><td>۱۲۰,۰۰۰</td><td>رستوران پارک</td><td>1404-08-01</td></tr>
+                <tr><td>قهوه</td><td>۸۵,۰۰۰</td><td>کافه مرکزی</td><td>1404-08-02</td></tr>
+                <tr><td>بنزین</td><td>۱۵۰,۰۰۰</td><td>سفر شمال</td><td>1404-08-03</td></tr>
+                <tr><td>خرید</td><td>۳۵۰,۰۰۰</td><td>لوازم سفر</td><td>1404-08-05</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- right -->
+      <div class="right">
+        <div class="card fade-in">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>نمودار هزینه‌ها</strong></div>
+            <div class="muted">دسته‌بندی</div>
+          </div>
+          <div class="chart-box" id="chartPlaceholder">[ نمودار دایره‌ای — Chart.js واقعی در نسخه نهایی ]</div>
+        </div>
+
+        <div class="card fade-in delay-1">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>تسویه هوشمند</strong></div>
+            <div class="muted">محاسبه سهم</div>
+          </div>
+          <div style="margin-top:10px" class="muted">
+            <div>مجموع هزینه: <strong>2,400,000</strong></div>
+            <div style="margin-top:8px">سهم هر نفر: <strong>600,000</strong></div>
+            <div style="margin-top:10px">
+              <button class="btn primary glow">محاسبه تسویه</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card fade-in delay-2">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>گروه‌ها</strong></div>
+            <div class="muted">مدیریت سریع</div>
+          </div>
+          <div style="margin-top:8px">
+            <div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03)"><strong>گروه دوستان</strong><div class="muted">خرج‌های آخر هفته</div></div>
+            <div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03)"><strong>سفر تابستان</strong><div class="muted">برنامه‌ریزی هزینه‌ها</div></div>
+
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <input class="input" placeholder="نام گروه جدید" />
+              <button class="btn primary">ساخت گروه</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- body -->
+    <footer style="padding:12px 20px; text-align:center; color:rgba(255,255,255,0.7); border-top:1px solid rgba(255,255,255,0.02)">
+      ساخته‌شده با ❤️ — تم رزگلد متالیک
+    </footer>
+  </div>
+
+<script>
+  // فقط برای حس دینامیک: حرکت آرامِ نوار پیشرفت و نمایشیِ fade-in
+  document.addEventListener('DOMContentLoaded', () => {
+    const p = document.getElementById('pbar');
+    setTimeout(()=> p.style.width = '24%', 80);
+    // small hover glow demo on primary buttons
+    document.querySelectorAll('.btn.primary').forEach(b => {
+      b.addEventListener('mouseenter', ()=> b.style.boxShadow = '0 26px 48px rgba(232,159,166,0.2)');
+      b.addEventListener('mouseleave', ()=> b.style.boxShadow = '0 8px 20px rgba(232,159,166,0.08)');
+    });
+  });
+</script>
+</body>
+</html>
